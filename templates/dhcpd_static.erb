@@ -1,0 +1,9 @@
+# VAGRANT-BEGIN: <%= mac %>
+host <%= name %> {
+        hardware ethernet <%= mac %>;
+        fixed-address <%= ip %>;
+        option domain-name-servers 0.0.0.0;
+        option domain-name "";
+        option routers 0.0.0.0;
+}
+# VAGRANT-END: <%= mac %>
