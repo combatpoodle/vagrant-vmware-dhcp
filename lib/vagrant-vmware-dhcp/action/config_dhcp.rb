@@ -130,10 +130,17 @@ module VagrantPlugins
 
           mac = network[:mac]
 
-          sudo_command = ""
-          sudo_command = "sudo " if !File.writable?(conf_location)
+          command = []
+          command << "sudo" if !File.writable?(conf_location)
+          command += [
+            "sed", "-E", "-e",
+            "/^# VAGRANT-BEGIN: #{mac}/," +
+            "/^# VAGRANT-END: #{mac}/ d",
+            "-ibak",
+            conf_location
+          ]
 
-          system("#{sudo_command}sed -r -e '\\\x01^# VAGRANT-BEGIN: #{mac}\x01,\\\x01^# VAGRANT-END: #{mac}\x01 d' -ibak '#{escaped_conf_location}'")
+          system(*command)
         end
 
         def write_dhcpd_conf(network)
