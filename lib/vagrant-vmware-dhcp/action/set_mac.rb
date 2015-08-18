@@ -14,10 +14,12 @@ module VagrantPlugins
         def call(env)
           @env = env
 
-          machine = env[:machine]
+          if @env[:machine]
+            machine = @env[:machine]
 
-          if machine
-            set_mac_address(env)
+            if (@env[:machine].provider_name == :vmware_fusion or @env[:machine].provider_name == :vmware_workstation) and @env[:machine].config.control_dhcp
+              set_mac_address(@env)
+            end
           end
 
           @app.call(@env)

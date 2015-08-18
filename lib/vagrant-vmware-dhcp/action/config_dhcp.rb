@@ -18,8 +18,7 @@ module VagrantPlugins
           if @env[:machine]
             @logger.debug("In config_dhcp provider_name is #{@env[:machine].provider_name}")
 
-            # or env[:machine].provider_name == :vmware_workstation
-            if @env[:machine].provider_name == :vmware_fusion or @env[:machine].provider_name == :vmware_workstation
+            if (@env[:machine].provider_name == :vmware_fusion or @env[:machine].provider_name == :vmware_workstation) and @env[:machine].config.control_dhcp
               configure_dhcp
             end
           end

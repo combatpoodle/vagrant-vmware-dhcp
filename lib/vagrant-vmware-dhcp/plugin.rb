@@ -9,23 +9,27 @@ module VagrantPlugins
       Especially nice on multi-vm environments with Windows.
       DESC
 
+      config(:control_dhcp) do
+        Config
+      end
+
       action_hook('DA VMWare Network: Configure MAC addresses') do |hook|
         action = Vagrant::Action::Builtin::ConfigValidate
         hook.before(action, VagrantVmwareDhcp::Action::SetMac)
       end
 
-      if Vagrant::Util::Platform.windows?
-        ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpWindows
-        ActionClass = HashiCorp::VagrantVMwaredesktop::Action::Network
-      elsif Vagrant::Util::Platform.linux?
-        ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpLinux
-        ActionClass = HashiCorp::VagrantVMwaredesktop::Action::Network
-      elsif Vagrant::Util::Platform.darwin?
-        ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpDarwin
-        ActionClass = HashiCorp::VagrantVMwarefusion::Action::Network
-      end
-
       action_hook('DA VMWare Network: Configure dhcp.conf') do |hook|
+        if Vagrant::Util::Platform.windows?
+          ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpWindows
+          ActionClass = HashiCorp::VagrantVMwaredesktop::Action::Network
+        elsif Vagrant::Util::Platform.linux?
+          ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpLinux
+          ActionClass = HashiCorp::VagrantVMwaredesktop::Action::Network
+        elsif Vagrant::Util::Platform.darwin?
+          ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpDarwin
+          ActionClass = HashiCorp::VagrantVMwarefusion::Action::Network
+        end
+
         hook.after(ActionClass, ConfigDhcpClass)
       end
 
