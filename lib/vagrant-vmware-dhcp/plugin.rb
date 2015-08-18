@@ -14,9 +14,19 @@ module VagrantPlugins
         hook.before(action, VagrantVmwareDhcp::Action::SetMac)
       end
 
+      if Vagrant::Util::Platform.windows?
+        ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpWindows
+        ActionClass = HashiCorp::VagrantVMwaredesktop::Action::Network
+      elsif Vagrant::Util::Platform.linux?
+        ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpLinux
+        ActionClass = HashiCorp::VagrantVMwaredesktop::Action::Network
+      elsif Vagrant::Util::Platform.darwin?
+        ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpDarwin
+        ActionClass = HashiCorp::VagrantVMwarefusion::Action::Network
+      end
+
       action_hook('DA VMWare Network: Configure dhcp.conf') do |hook|
-        action = HashiCorp::VagrantVMwarefusion::Action::Network
-        hook.after(action, VagrantVmwareDhcp::Action::ConfigDhcp)
+        hook.after(ActionClass, ConfigDhcpClass)
       end
 
       # action_hook(:init_i18n, :environment_load) { init_i18n }

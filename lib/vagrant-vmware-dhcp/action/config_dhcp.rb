@@ -16,10 +16,10 @@ module VagrantPlugins
           @env = env
 
           if @env[:machine]
-            @logger.info("In config_dhcp provider_name is #{@env[:machine].provider_name}")
+            @logger.debug("In config_dhcp provider_name is #{@env[:machine].provider_name}")
 
-            # or env[:machine].provider_name == :vmware_desktop
-            if @env[:machine].provider_name == :vmware_fusion
+            # or env[:machine].provider_name == :vmware_workstation
+            if @env[:machine].provider_name == :vmware_fusion or @env[:machine].provider_name == :vmware_workstation
               configure_dhcp
             end
           end
@@ -101,12 +101,6 @@ module VagrantPlugins
           network_map
         end
 
-        def guess_dhcpd_conf_location(network)
-          @logger.debug("Using dhcpd.conf at #{network[:vnet]}")
-          location = "/Library/Preferences/VMware Fusion/#{network[:vnet]}/dhcpd.conf"
-          return location
-        end
-
         def apply_static_dhcp_config(machine, network_map)
 
           network_map.each {
@@ -124,32 +118,7 @@ module VagrantPlugins
 
         end
 
-        def prune_dhcpd_conf(network)
-          conf_location = guess_dhcpd_conf_location(network)
-          escaped_conf_location = Vagrant::Util::ShellQuote.escape(conf_location, "'")
-
-          mac = network[:mac]
-
-          command = []
-          command << "sudo" if !File.writable?(conf_location)
-          command += [
-            "sed", "-E", "-e",
-            "/^# VAGRANT-BEGIN: #{mac}/," +
-            "/^# VAGRANT-END: #{mac}/ d",
-            "-ibak",
-            conf_location
-          ]
-
-          system(*command)
-        end
-
-        def write_dhcpd_conf(network)
-          conf_location = guess_dhcpd_conf_location(network)
-          escaped_conf_location = Vagrant::Util::ShellQuote.escape(conf_location, "'")
-
-          sudo_command = ""
-          sudo_command = "sudo " if !File.writable?(conf_location)
-
+        def get_dhcpd_section(network)
           netname = [network[:vnet], network[:ip].gsub(/\./, '_')].join('_')
 
           output = Vagrant::Util::TemplateRenderer.render('dhcpd_static',
@@ -159,41 +128,24 @@ module VagrantPlugins
                                            name: netname,
                                            template_root: VagrantPlugins::VagrantVmwareDhcp.source_root().join("templates")
                                            )
-
-          @logger.debug("DHCPD template for interface #{network[:vnet]} is #{output}")
-
-          before = File.open(conf_location).read
-          @logger.debug("Before altering, dhcpd.conf content is #{before}")
-
-          output.split("\n").each do |line|
-            line = Vagrant::Util::ShellQuote.escape(line, "'")
-            system(%Q[echo '#{line}' | #{sudo_command}tee -a '#{escaped_conf_location}' >/dev/null])
-          end
-
-          after = File.open(conf_location).read
-          @logger.debug("After, dhcpd.conf content is #{after}")
+          return output
         end
 
-        def trigger_dhcpd_update
-          # Per http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&cmd=displayKC&externalId=1026510
-
-          vmnet_cli = "/Applications/VMware Fusion.app/Contents/Library/vmnet-cli"
-
-          configureCommand = [ "sudo", vmnet_cli, "--configure" ].flatten
-          stopCommand      = [ "sudo", vmnet_cli, "--stop" ].flatten
-          startCommand     = [ "sudo", vmnet_cli, "--start" ].flatten
-          statusCommand    = [ "sudo", vmnet_cli, "--status" ].flatten
-
-          Vagrant::Util::Subprocess.execute(*configureCommand)
-          Vagrant::Util::Subprocess.execute(*stopCommand)
-          Vagrant::Util::Subprocess.execute(*startCommand)
-          r = Vagrant::Util::Subprocess.execute(*statusCommand)
-
-          if r.exit_code != 0
-            @env[:ui].error("VMNet status exited with code #{r.exit_code} and output:\n#{r.stdout.chomp}")
-          end
-
-        end
+        # def prune_dhcpd_conf(network)
+        #   raise "This should never happen!"
+        # end
+        #
+        # def dhcpd_conf_location(network)
+        #   raise "This should never happen!"
+        # end
+        #
+        # def write_dhcpd_conf(network)
+        #   raise "This should never happen!"
+        # end
+        #
+        # def trigger_dhcpd_update(network)
+        #   raise "This should never happen!"
+        # end
 
       end
     end
