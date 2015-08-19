@@ -27,11 +27,13 @@ module VagrantPlugins
           conf_location = dhcpd_conf_location(network)
 
           mac = network[:mac]
+          ip = network[:ip]
 
           before = File.open(conf_location).read
           @logger.debug("Before altering, dhcpd.conf content is #{before}")
 
-          after = before.gsub(/^# VAGRANT-BEGIN: #{mac}.*^# VAGRANT-END: #{mac}\s+/m, '')
+          intermediate = before.gsub(/^# VAGRANT-BEGIN: #{mac}.*^# VAGRANT-END: #{mac}\s+/m, '')
+          after = intermediate.gsub(/^# VAGRANT-BEGIN: #{ip}.*^# VAGRANT-END: #{ip}\s+/m, '')
 
           File.open(conf_location, "w") { |fd| fd.write(after) }
 

@@ -24,6 +24,7 @@ module VagrantPlugins
           escaped_conf_location = Vagrant::Util::ShellQuote.escape(conf_location, "'")
 
           mac = network[:mac]
+          ip = network[:ip]
 
           before = File.open(conf_location).read
           @logger.debug("Before altering, dhcpd.conf content is #{before}")
@@ -34,6 +35,18 @@ module VagrantPlugins
             "sed", "-E", "-e",
             "/^# VAGRANT-BEGIN: #{mac}/," +
             "/^# VAGRANT-END: #{mac}/ d",
+            "-ibak",
+            conf_location
+          ]
+
+          system(*command)
+
+          command = []
+          command << "sudo" if !File.writable?(conf_location)
+          command += [
+            "sed", "-E", "-e",
+            "/^# VAGRANT-BEGIN: #{ip}/," +
+            "/^# VAGRANT-END: #{ip}/ d",
             "-ibak",
             conf_location
           ]

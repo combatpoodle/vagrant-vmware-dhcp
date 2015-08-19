@@ -11,7 +11,7 @@ module VagrantPlugins
 
       def finalize!
         if @enable != true
-          @enable = false 
+          @enable = false
         end
       end
     end

@@ -106,7 +106,9 @@ module VagrantPlugins
             @logger.info("Pruning DHCP configuration for #{network[:ip]}")
             prune_dhcpd_conf(network)
 
-            if machine.config.control_dhcp == true
+            @env[:ui].error("CONTROL_DHCP is #{machine.config.control_dhcp.enable}")
+
+            if machine.config.control_dhcp.enable
               @env[:ui].info("Configuring DHCP for #{network[:ip]} on #{network[:vnet]}")
 
               write_dhcpd_conf(network)
