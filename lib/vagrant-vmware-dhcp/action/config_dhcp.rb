@@ -16,9 +16,7 @@ module VagrantPlugins
           @env = env
 
           if @env[:machine]
-            @logger.debug("In config_dhcp provider_name is #{@env[:machine].provider_name}")
-
-            if (@env[:machine].provider_name == :vmware_fusion or @env[:machine].provider_name == :vmware_workstation) and @env[:machine].config.control_dhcp
+            if @env[:machine].provider_name == :vmware_fusion or @env[:machine].provider_name == :vmware_workstation
               configure_dhcp
             end
           end
@@ -105,10 +103,14 @@ module VagrantPlugins
           network_map.each {
             |mac, network|
 
-            @env[:ui].info("Configuring DHCP for #{network[:ip]} on #{network[:vnet]}")
-
+            @logger.info("Pruning DHCP configuration for #{network[:ip]}")
             prune_dhcpd_conf(network)
-            write_dhcpd_conf(network)
+
+            if machine.config.control_dhcp == true
+              @env[:ui].info("Configuring DHCP for #{network[:ip]} on #{network[:vnet]}")
+
+              write_dhcpd_conf(network)
+            end
           }
 
           trigger_dhcpd_update

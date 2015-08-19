@@ -19,12 +19,14 @@ module VagrantPlugins
       end
 
       action_hook('DA VMWare Network: Configure dhcp.conf') do |hook|
-        if Vagrant::Util::Platform.windows?
+        if defined?(ActionClass) and defined?(ConfigDhcpClass)
+          # no-op
+        elsif Vagrant::Util::Platform.windows?
           ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpWindows
-          ActionClass = HashiCorp::VagrantVMwaredesktop::Action::Network
+          ActionClass = HashiCorp::VagrantVMwareworkstation::Action::Network
         elsif Vagrant::Util::Platform.linux?
           ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpLinux
-          ActionClass = HashiCorp::VagrantVMwaredesktop::Action::Network
+          ActionClass = HashiCorp::VagrantVMwareworkstation::Action::Network
         elsif Vagrant::Util::Platform.darwin?
           ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpDarwin
           ActionClass = HashiCorp::VagrantVMwarefusion::Action::Network

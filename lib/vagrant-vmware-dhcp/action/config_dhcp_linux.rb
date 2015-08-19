@@ -25,6 +25,9 @@ module VagrantPlugins
 
           mac = network[:mac]
 
+          before = File.open(conf_location).read
+          @logger.debug("Before altering, dhcpd.conf content is #{before}")
+
           command = []
           command << "sudo" if !File.writable?(conf_location)
           command += [
@@ -36,6 +39,9 @@ module VagrantPlugins
           ]
 
           system(*command)
+
+          after = File.open(conf_location).read
+          @logger.debug("After, dhcpd.conf content is #{after}")
         end
 
         def write_dhcpd_conf(network)

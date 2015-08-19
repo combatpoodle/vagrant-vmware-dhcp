@@ -29,7 +29,6 @@ module VagrantPlugins
           mac = network[:mac]
 
           before = File.open(conf_location).read
-
           @logger.debug("Before altering, dhcpd.conf content is #{before}")
 
           after = before.gsub(/^# VAGRANT-BEGIN: #{mac}.*^# VAGRANT-END: #{mac}\s+/m, '')

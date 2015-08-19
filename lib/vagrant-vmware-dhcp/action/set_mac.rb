@@ -15,9 +15,7 @@ module VagrantPlugins
           @env = env
 
           if @env[:machine]
-            machine = @env[:machine]
-
-            if (@env[:machine].provider_name == :vmware_fusion or @env[:machine].provider_name == :vmware_workstation) and @env[:machine].config.control_dhcp
+            if (@env[:machine].provider_name == :vmware_fusion or @env[:machine].provider_name == :vmware_workstation)
               set_mac_address(@env)
             end
           end
@@ -39,7 +37,9 @@ module VagrantPlugins
 
         def mac_from_ip(ip)
           sha = Digest::SHA256.hexdigest ip
-          mac = sha.scan(/.{12}/)[0]
+
+          # VMWare doesn't like odd values for the first octet.
+          mac = "AA" + sha.scan(/.{10}/)[0]
 
           mac
         end
