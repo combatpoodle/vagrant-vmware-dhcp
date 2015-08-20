@@ -1,4 +1,5 @@
 require_relative "action"
+require_relative "dhcp"
 
 module VagrantPlugins
   module VagrantVmwareDhcp
@@ -13,26 +14,33 @@ module VagrantPlugins
         Config
       end
 
-      action_hook('DA VMWare Network: Configure MAC addresses') do |hook|
+      action_hook('DA VMware Network: Configure MAC addresses') do |hook|
         action = Vagrant::Action::Builtin::ConfigValidate
         hook.before(action, VagrantVmwareDhcp::Action::SetMac)
       end
 
-      action_hook('DA VMWare Network: Configure dhcp.conf') do |hook|
-        if defined?(ActionClass) and defined?(ConfigDhcpClass)
+      action_hook('DA VMware Network: Configure dhcp.conf') do |hook|
+        if defined?(ActionConfigure)
           # no-op
-        elsif Vagrant::Util::Platform.windows?
-          ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpWindows
-          ActionClass = HashiCorp::VagrantVMwareworkstation::Action::Network
-        elsif Vagrant::Util::Platform.linux?
-          ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpLinux
-          ActionClass = HashiCorp::VagrantVMwareworkstation::Action::Network
+        elsif Vagrant::Util::Platform.windows? or Vagrant::Util::Platform.linux?
+          ActionConfigure = HashiCorp::VagrantVMwareworkstation::Action::Network
         elsif Vagrant::Util::Platform.darwin?
-          ConfigDhcpClass = VagrantVmwareDhcp::Action::ConfigDhcpDarwin
-          ActionClass = HashiCorp::VagrantVMwarefusion::Action::Network
+          ActionConfigure = HashiCorp::VagrantVMwarefusion::Action::Network
         end
 
-        hook.after(ActionClass, ConfigDhcpClass)
+        hook.after(ActionConfigure, VagrantVmwareDhcp::Action::ConfigDhcp)
+      end
+
+      action_hook('DA VMware Network: Prune dhcp.conf') do |hook|
+        if defined?(ActionPrune)
+          # no-op
+        elsif Vagrant::Util::Platform.windows? or Vagrant::Util::Platform.linux?
+          ActionPrune = HashiCorp::VagrantVMwareworkstation::Action::Destroy
+        elsif Vagrant::Util::Platform.darwin?
+          ActionPrune = HashiCorp::VagrantVMwarefusion::Action::Destroy
+        end
+
+        hook.before(ActionPrune, VagrantVmwareDhcp::Action::PruneDhcp)
       end
 
       # action_hook(:init_i18n, :environment_load) { init_i18n }

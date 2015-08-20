@@ -5,11 +5,11 @@ require "digest"
 module VagrantPlugins
   module VagrantVmwareDhcp
     module Action
-      class ConfigDhcp
+      class PruneDhcp
         def initialize(app, env)
           @app    = app
           @env    = env
-          @logger = Log4r::Logger.new("vagrant::plugins::vagrant-vmware-dhcp::config_dhcp")
+          @logger = Log4r::Logger.new("vagrant::plugins::vagrant-vmware-dhcp::prune_dhcp")
         end
 
         def call(env)
@@ -17,7 +17,8 @@ module VagrantPlugins
 
           if @env[:machine]
             if @env[:machine].provider_name == :vmware_fusion or @env[:machine].provider_name == :vmware_workstation
-              configure_dhcp(@env[:machine])
+              @env[:ui].info("Pruning altered DHCP configuration")
+              prune_dhcp(@env[:machine])
             end
           end
 
@@ -26,15 +27,11 @@ module VagrantPlugins
 
         private
 
-        def configure_dhcp(machine)
+        def prune_dhcp(machine)
           # dhcp_manager = VagrantPlugins::VagrantVmwareDhcp::DhcpManager.new(@env[:ui], @logger, machine)
           dhcp_manager = get_dhcp_manager(machine)
 
           dhcp_manager.prune()
-
-          if machine.config.control_dhcp.enable
-            dhcp_manager.configure()
-          end
 
           dhcp_manager.reload()
         end
