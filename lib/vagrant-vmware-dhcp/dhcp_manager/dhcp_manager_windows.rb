@@ -45,7 +45,7 @@ module VagrantPlugins
       def write_configuration(network)
         conf_location = dhcpd_conf_location(network)
 
-        section = get_dhcpd_section(network)
+        section = template_machine_definition(network)
 
         @logger.debug("DHCPD template for interface #{network[:vnet]} is #{section}")
 
