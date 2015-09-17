@@ -16,7 +16,7 @@ To enable the plugin, just install and add `config.control_dhcp.enable = true` t
 
 ## Known issues
 
-VMware's networking does not appear to be stable.
+Some Windows host boxes ship with DHCP blocked.
 
 When switching from Virtualbox to VMware and back, don't forget to ensure that you've cleaned out your subnets from the other provider.
 
